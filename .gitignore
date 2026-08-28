@@ -1,0 +1,26 @@
+# Secrets
+.env
+
+# Data (year-long backtest outputs are huge and regenerable)
+*.csv
+*.xlsx
+*.log
+
+# Data folders (195MB+ of raw klines, old backtest outputs, Excel scratch work)
+Excel Sheets/
+HistoryCheck/
+yearAnalysis/
+development/
+Testing/
+__pycache__/
+myenv/
+Old Files/
+
+# Keep the small files that document data formats and results
+!futures.txt
+!futuresSample.txt
+!year_unconfirmed_variablePnL.csv
+
+# Python artifacts
+*.pyc
+.DS_Store
