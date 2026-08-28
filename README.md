@@ -6,8 +6,6 @@
 
 Most people who want to learn quant trading download a backtesting library, run someone else's strategy, and look at an equity curve. I didn't want the curve — I wanted to understand *why* the curve looks the way it does. So I built this from scratch: my own simulator, my own execution layer against Binance USDⓈ-M futures, my own rate-limit accounting, and my own state machine for keeping the bot's memory straight between Telegram commands.
 
-It hunts a very specific target: **penny-tier USDT perpetual futures** — the cheap, fast, violent corner of the market where a small account can actually move the needle. The name says it: panic at the penny level, entry on structure breaks, out before the crowd figures out what happened.
-
 ## The strategy
 
 The signal chain evolved over months of iteration, and every filter in it exists because a version without it lost money:
@@ -38,7 +36,7 @@ A 37% win rate sounds bad until you see the payoff ratio — this system is desi
 ## What I hand-built
 
 - **Backtest simulator** (`HistoryCheckEMA55_conf_1year.py`, `BacktestFunctions.py`) — walks every historical BoS event, replays the filter chain candle by candle, simulates the position to SL or TP, and computes leveraged PnL per trade. Includes a binary-search "last crossover" lookup and a terminal progress bar for the 339-ticker sweep.
-- **Live trader** (`orders.py` — 22 functions) — raw signed HMAC-SHA256 requests against Binance Futures: market/limit/stop-limit orders, SL/TP brackets, leverage + margin mode management, position polling, exchange precision (tickSize/stepSize) handling, and a `combo()` orchestrator that bundles an entry into one atomic flow. Plus active-position tracking and trailing stop-loss updates.
+- **Live trader** (`orders.py` — 22 functions) — raw signed HMAC-SHA256 requests against Binance Futures: market/limit/stop-limit orders, SL/TP brackets, leverage + margin mode management, position polling, exchange precision (tickSize/stepSize) handling, and a `combo()` orchestrator that bundles an entry into one flow. Plus active-position tracking and trailing stop-loss updates.
 - **Live scanner** (`HTMLAutoRequest.py`, `CheckJackpot.py`) — polls the live 15m klines for all tickers, tracks Binance's request-weight budget per minute (with a self-resetting counter and 429/418 Retry-After handling), and fires the same filter chain in real time.
 - **Telegram control plane** (`development/PennyPanic_v2.py`) — a prototype bot where `/run` and `/cancel` managed per-chat scan jobs through `python-telegram-bot`'s job queue. All the scan state — active positions, duplicate-entry guards, temporary-ignore lists with delayed removal — was handled manually with threads and timers, because I hadn't learned proper state stores yet. That was the point.
 - **Data pipeline** (`storage.py`, `setdefaults.py`) — OHLCV normalization from raw Binance responses, EMA pre-computation with TA-Lib, per-ticker CSV caching, and account-wide leverage defaults.
@@ -54,7 +52,7 @@ Building this solo taught me things a course never would:
 
 ## What I'd do differently
 
-Proper state store (SQLite) instead of in-memory lists, async I/O instead of threads, pytest coverage on the PnL math, and CI. I'm keeping this repo as-is on purpose — it's a snapshot of how far self-taught gets you, and the next repo shows what I learned from it.
+Proper state store (SQLite) instead of in-memory lists, async I/O instead of threads, pytest coverage on the PnL math, and CI. I'm keeping this repo as-is on purpose, and the next repo shows what I learned from it.
 
 ## Running it
 
@@ -72,4 +70,4 @@ The backtest reads per-ticker CSVs from a `yearData/` directory (built by the da
 Educational project. This is my engineering diary, not financial advice. It traded real money in small sizes while I learned — assume any strategy here is wrong until your own data says otherwise.
 
 ---
-*Solo project: strategy research, backtesting, live execution, data engineering, and bot ops — all self-taught.*
+*Solo project: strategy research, backtesting, live execution, data engineering, and bot ops*
